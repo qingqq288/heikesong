@@ -1,12 +1,637 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RPG 待办清单 · 任务即冒险</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>咒术回战热梗图鉴 - 搜索热门梗、B站弹幕梗、转盘梗、贴吧梗</title>
+<style>
+  :root{
+    --bg:#0b0b13; --panel:#14141f; --panel2:#101018;
+    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+    --txt:#e9e9f2; --sub:#9a9aad; --faint:#6b6b80;
+    --cyan:#4fd1ff; --purple:#a78bfa; --red:#ff4d5a; --orange:#ff9f43;
+    --green:#4ade80; --pink:#f472b6; --gold:#ffd166;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--txt); min-height:100vh;
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+    line-height:1.6; overflow-x:hidden;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(600px 400px at 12% -5%, rgba(79,209,255,.10), transparent 70%),
+      radial-gradient(700px 460px at 88% 0%, rgba(167,139,250,.10), transparent 70%),
+      radial-gradient(520px 380px at 50% 110%, rgba(255,77,90,.07), transparent 70%);
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(11,11,19,.78); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .head-in{max-width:1100px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:1px;cursor:pointer;user-select:none}
+  .logo .seal{
+    width:34px;height:34px;border-radius:8px;display:grid;place-items:center;
+    background:linear-gradient(135deg,#ff4d5a,#b91c3c); color:#fff; font-size:20px; font-weight:900;
+    box-shadow:0 0 18px rgba(255,77,90,.45);
+  }
+  .logo b{background:linear-gradient(90deg,#4fd1ff,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+  nav{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  nav button{
+    background:none;border:1px solid transparent;color:var(--sub);padding:7px 14px;border-radius:999px;
+    font-size:14px;cursor:pointer;transition:.2s;font-family:inherit;
+  }
+  nav button:hover{color:var(--txt);border-color:var(--line2)}
+  nav button.active{
+    color:#fff;border-color:transparent;
+    background:linear-gradient(90deg,rgba(79,209,255,.18),rgba(167,139,250,.18));
+    box-shadow:inset 0 0 0 1px rgba(79,209,255,.35);
+  }
+
+  .view{display:none;padding:34px 0 70px;animation:fadein .35s ease}
+  .view.active{display:block}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;text-align:center;padding:52px 10px 30px;overflow:visible}
+  .hero .kanji{
+    position:absolute;left:50%;top:-40px;transform:translateX(-50%);
+    font-size:330px;font-weight:900;color:rgba(255,255,255,.032);
+    pointer-events:none;user-select:none;line-height:1;z-index:0;
+  }
+  .hero>*{position:relative;z-index:1}
+  .hero h1{
+    font-size:clamp(30px,5.4vw,52px);font-weight:900;letter-spacing:2px;
+    background:linear-gradient(92deg,#4fd1ff 5%,#a78bfa 45%,#ff4d5a 95%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero .stats{color:var(--sub);margin-top:12px;font-size:15px}
+  .hero .stats b{color:var(--cyan);font-size:18px}
+
+  .search-box{
+    max-width:640px;margin:28px auto 0;display:flex;gap:8px;
+    background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:8px;
+    box-shadow:0 10px 34px rgba(0,0,0,.4);
+  }
+  .search-box:focus-within{border-color:rgba(79,209,255,.5);box-shadow:0 0 0 3px rgba(79,209,255,.12)}
+  .search-box input{
+    flex:1;min-width:0;background:none;border:none;outline:none;color:var(--txt);
+    font-size:15px;padding:8px 10px;font-family:inherit;
+  }
+  .search-box input::placeholder{color:var(--faint)}
+  .search-box select{
+    background:#1b1b28;color:var(--txt);border:1px solid var(--line2);border-radius:9px;
+    padding:6px 8px;font-size:13px;outline:none;cursor:pointer;max-width:120px;
+  }
+  .search-box button{
+    background:linear-gradient(90deg,#ff4d5a,#c2233f);border:none;border-radius:10px;
+    color:#fff;font-size:14px;font-weight:700;padding:8px 20px;cursor:pointer;font-family:inherit;transition:.2s;
+  }
+  .search-box button:hover{filter:brightness(1.15)}
+  .try{color:var(--faint);font-size:13px;margin-top:12px}
+  .try a{color:var(--cyan);text-decoration:none;margin:0 5px;cursor:pointer}
+  .try a:hover{text-decoration:underline}
+
+  /* ---------- hotwords ---------- */
+  .hotwords{max-width:720px;margin:26px auto 0;display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+  .hw{
+    border:1px solid var(--line2);border-radius:999px;padding:5px 14px;cursor:pointer;
+    color:var(--sub);background:rgba(255,255,255,.02);transition:.2s;line-height:1.4;
+  }
+  .hw:hover{color:#fff;border-color:var(--cyan);box-shadow:0 0 14px rgba(79,209,255,.2)}
+  .hw.l1{font-size:17px;font-weight:700;color:#fff;border-color:rgba(255,77,90,.55);background:rgba(255,77,90,.07)}
+  .hw.l2{font-size:15px;font-weight:600;color:var(--txt)}
+
+  /* ---------- result grid & cards ---------- */
+  .sec-head{display:flex;align-items:center;gap:12px;margin:40px 0 18px}
+  .sec-head h2{font-size:21px;font-weight:800;letter-spacing:1px}
+  .sec-head .cnt{color:var(--faint);font-size:13px}
+  .sec-head::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-radius:14px;padding:18px;
+    display:flex;flex-direction:column;gap:10px;transition:.22s;position:relative;overflow:hidden;
+  }
+  .card:hover{transform:translateY(-4px);border-color:rgba(79,209,255,.45);box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 0 1px rgba(79,209,255,.15)}
+  .card .row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .grade{
+    font-size:11px;font-weight:800;padding:2px 9px;border-radius:6px;letter-spacing:1px;
+  }
+  .g-tokko{background:linear-gradient(90deg,#ff4d5a,#c2233f);color:#fff;box-shadow:0 0 12px rgba(255,77,90,.5)}
+  .g-1{background:linear-gradient(90deg,#8b5cf6,#6d28d9);color:#fff}
+  .g-jun{background:linear-gradient(90deg,#22a3c9,#155e75);color:#fff}
+  .g-2{background:#2a2a38;color:var(--sub)}
+  .cat{font-size:11px;padding:2px 9px;border-radius:6px;font-weight:600;border:1px solid}
+  .c-台词{color:var(--cyan);border-color:rgba(79,209,255,.4)}
+  .c-场面{color:var(--purple);border-color:rgba(167,139,250,.4)}
+  .c-弹幕{color:var(--pink);border-color:rgba(244,114,182,.4)}
+  .c-转盘{color:var(--orange);border-color:rgba(255,159,67,.55);background:rgba(255,159,67,.07)}
+  .c-贴吧{color:#fb923c;border-color:rgba(251,146,60,.4)}
+  .c-绰号{color:var(--green);border-color:rgba(74,222,128,.4)}
+  .c-设定{color:#7dd3fc;border-color:rgba(125,211,252,.4)}
+  .card h3{font-size:18px;font-weight:800;letter-spacing:.5px}
+  .card .src{font-size:12px;color:var(--faint)}
+  .card .desc{font-size:13.5px;color:var(--sub);flex:1}
+  .card .quote{
+    font-size:13px;color:#c9c9dc;border-left:3px solid var(--purple);
+    padding:4px 10px;background:rgba(167,139,250,.06);border-radius:0 8px 8px 0;
+  }
+  .heatbar{height:4px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+  .heatbar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#4fd1ff,#a78bfa,#ff4d5a)}
+  .heatrow{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--faint)}
+  .empty{color:var(--faint);text-align:center;padding:50px 0;font-size:14px}
+  .empty b{color:var(--cyan)}
+
+  /* ---------- browse ---------- */
+  .arc{margin-bottom:38px}
+  .arc-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+  .arc-head h3{font-size:19px;font-weight:800}
+  .arc-head .tag{font-size:12px;color:var(--faint)}
+  .arc p{color:var(--sub);font-size:13.5px;margin-bottom:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    border:1px solid var(--line2);border-radius:9px;padding:6px 12px;font-size:13px;
+    color:var(--txt);background:rgba(255,255,255,.02);cursor:pointer;transition:.2s;
+  }
+  .chip:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-2px)}
+  .chip small{color:var(--faint);margin-left:6px;font-size:11px}
+
+  /* ---------- rank ---------- */
+  .rank-list{display:flex;flex-direction:column;gap:8px}
+  .r-row{
+    display:flex;align-items:center;gap:14px;padding:11px 16px;
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-radius:12px;transition:.2s;
+  }
+  .r-row:hover{border-color:rgba(255,209,102,.5);transform:translateX(4px)}
+  .r-num{width:38px;font-size:20px;font-weight:900;color:var(--faint);font-style:italic;flex-shrink:0}
+  .r-row.top .r-num{color:var(--gold)}
+  .r-name{font-weight:800;font-size:15px;min-width:130px}
+  .r-cat{font-size:11px;color:var(--faint)}
+  .r-bar{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden}
+  .r-bar i{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#ff4d5a)}
+  .r-heat{width:36px;text-align:right;font-weight:700;color:var(--gold);font-size:14px}
+
+  /* ---------- quiz ---------- */
+  .quiz-box{
+    max-width:640px;margin:0 auto;background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line2);border-radius:16px;padding:30px 26px;
+  }
+  .quiz-top{display:flex;justify-content:space-between;color:var(--faint);font-size:13px;margin-bottom:14px}
+  .quiz-q{font-size:18px;font-weight:800;margin-bottom:20px;letter-spacing:.5px}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:560px){.opts{grid-template-columns:1fr}}
+  .opt{
+    border:1px solid var(--line2);background:rgba(255,255,255,.02);color:var(--txt);
+    border-radius:10px;padding:12px 14px;font-size:14px;cursor:pointer;text-align:left;
+    transition:.15s;font-family:inherit;
+  }
+  .opt:hover:not(:disabled){border-color:var(--cyan);background:rgba(79,209,255,.06)}
+  .opt.right{border-color:var(--green);background:rgba(74,222,128,.12);color:var(--green)}
+  .opt.wrong{border-color:var(--red);background:rgba(255,77,90,.12);color:var(--red)}
+  .opt:disabled{cursor:default;opacity:.9}
+  .quiz-foot{margin-top:18px;display:flex;justify-content:space-between;align-items:center}
+  .quiz-foot .fb{font-size:14px;color:var(--sub);min-height:22px}
+  .btn{
+    background:linear-gradient(90deg,#4fd1ff,#a78bfa);border:none;border-radius:10px;color:#0b0b13;
+    font-size:14px;font-weight:800;padding:9px 22px;cursor:pointer;font-family:inherit;transition:.2s;
+  }
+  .btn:hover{filter:brightness(1.12)}
+  .btn:disabled{opacity:.4;cursor:default}
+  .quiz-result{text-align:center;padding:20px 0}
+  .quiz-result .big{font-size:26px;font-weight:900;letter-spacing:2px;margin:10px 0;
+    background:linear-gradient(90deg,#ffd166,#ff4d5a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .quiz-result p{color:var(--sub);font-size:14px}
+
+  /* ---------- wheel ---------- */
+  .wheel-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;padding-top:6px}
+  .wheel-area{position:relative;width:340px;height:340px;margin-top:14px}
+  .pointer{
+    position:absolute;left:50%;top:-4px;transform:translateX(-50%);z-index:5;
+    width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;
+    border-top:24px solid var(--gold);filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));
+  }
+  .hub{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;
+    width:64px;height:64px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 35% 30%,#2a2a3c,#101018);border:2px solid var(--gold);
+    font-weight:900;font-size:15px;color:var(--gold);letter-spacing:1px;
+    box-shadow:0 0 24px rgba(255,209,102,.35);
+  }
+  #wheel{
+    width:320px;height:320px;border-radius:50%;margin:10px auto 0;position:relative;
+    border:5px solid rgba(255,209,102,.55);
+    box-shadow:0 0 40px rgba(255,77,90,.25),0 14px 40px rgba(0,0,0,.55);
+    transition:transform 4s cubic-bezier(.17,.67,.12,.99);
+  }
+  #wheel span{
+    position:absolute;left:50%;top:50%;font-size:13px;font-weight:700;color:#fff;
+    text-shadow:0 1px 4px rgba(0,0,0,.85);white-space:nowrap;letter-spacing:1px;
+  }
+  .wheel-note{color:var(--faint);font-size:13px;text-align:center;max-width:520px}
+  .bento{
+    max-width:480px;width:100%;text-align:center;padding:20px 22px;border-radius:14px;
+    border:1px solid rgba(255,77,90,.5);background:linear-gradient(180deg,rgba(255,77,90,.10),rgba(255,77,90,.03));
+    opacity:0;transform:translateY(10px);transition:.4s;
+  }
+  .bento.show{opacity:1;transform:none}
+  .bento .t{font-size:13px;color:var(--orange);letter-spacing:3px;font-weight:700}
+  .bento .n{font-size:24px;font-weight:900;margin:6px 0;color:#fff}
+  .bento .m{font-size:14px;color:var(--sub)}
+  .wheel-count{color:var(--faint);font-size:12px}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding:26px 0 34px;margin-top:20px}
+  footer p{color:var(--faint);font-size:12px;text-align:center;line-height:2}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="logo" onclick="switchView('home')">
+      <span class="seal">咒</span>
+      <span><b>咒术回战</b>热梗图鉴</span>
+    </div>
+    <nav id="nav">
+      <button data-view="home" class="active">搜索梗</button>
+      <button data-view="browse">分篇浏览</button>
+      <button data-view="rank">热梗排行</button>
+      <button data-view="quiz">梗学问答</button>
+      <button data-view="wheel">死亡转盘</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ 首页·搜索 ============ -->
+  <section id="view-home" class="view active">
+    <div class="hero">
+      <div class="kanji">呪</div>
+      <h1>咒术回战热梗图鉴</h1>
+      <p class="stats">24 卷 · 271 话漫画 · <b id="statMemes">0</b> 个热梗，搜索即得出处、篇章与名场面</p>
+      <div class="search-box">
+        <input id="searchInput" type="text" placeholder="输入梗名或关键词，如：五条悟 / 转盘 / 加班">
+        <select id="catSelect">
+          <option value="">全部类别</option>
+          <option value="台词">名台词</option>
+          <option value="场面">名场面</option>
+          <option value="弹幕">B站弹幕梗</option>
+          <option value="转盘">转盘梗</option>
+          <option value="贴吧">贴吧梗</option>
+          <option value="绰号">角色绰号</option>
+          <option value="设定">名设定</option>
+        </select>
+        <button id="searchBtn">搜一下</button>
+      </div>
+      <p class="try">试试：
+        <a onclick="quick('腰斩')">腰斩</a>·
+        <a onclick="quick('死亡转盘')">死亡转盘</a>·
+        <a onclick="quick('全盛宿傩')">全盛宿傩</a>·
+        <a onclick="quick('加班')">加班</a>·
+        <a onclick="quick('脑花')">脑花</a>
+      </p>
+      <div class="hotwords" id="hotwords"></div>
+    </div>
+
+    <div class="sec-head"><h2 id="resultTitle">热门梗速览</h2><span class="cnt" id="resultCnt"></span></div>
+    <div id="resultGrid" class="grid"></div>
+  </section>
+
+  <!-- ============ 分篇浏览 ============ -->
+  <section id="view-browse" class="view">
+    <div class="sec-head" style="margin-top:0"><h2>分篇浏览</h2><span class="cnt">从少年篇到完结，梗跟剧情走</span></div>
+    <div id="arcList"></div>
+  </section>
+
+  <!-- ============ 热梗排行 ============ -->
+  <section id="view-rank" class="view">
+    <div class="sec-head" style="margin-top:0"><h2>热梗排行</h2><span class="cnt">按梗浓度（热度）排序</span></div>
+    <div class="rank-list" id="rankList"></div>
+  </section>
+
+  <!-- ============ 梗学问答 ============ -->
+  <section id="view-quiz" class="view">
+    <div class="sec-head" style="margin-top:0"><h2>梗学问答</h2><span class="cnt">12 题，测测你的梗浓度</span></div>
+    <div class="quiz-box" id="quizBox"></div>
+  </section>
+
+  <!-- ============ 死亡转盘 ============ -->
+  <section id="view-wheel" class="view">
+    <div class="sec-head" style="margin-top:0"><h2>死亡转盘</h2><span class="cnt">传说芥见下下用转盘决定谁领便当</span></div>
+    <div class="wheel-wrap">
+      <p class="wheel-note">规则：转到谁，谁下一话领便当。flag 慎立，遗言趁早。本转盘与芥见下下本人无关（大概）。</p>
+      <div class="wheel-area">
+        <div class="pointer"></div>
+        <div id="wheel"></div>
+        <div class="hub">咒</div>
+      </div>
+      <button class="btn" id="spinBtn" style="background:linear-gradient(90deg,#ff4d5a,#c2233f);color:#fff;padding:11px 34px;font-size:15px">转动转盘</button>
+      <div class="bento" id="bento">
+        <div class="t">本轮转盘结果</div>
+        <div class="n" id="bentoName">—</div>
+        <div class="m" id="bentoMsg"></div>
+      </div>
+      <div class="wheel-count" id="wheelCount"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>本站为粉丝二创作品，仅供娱乐，不可用于商业用途。<br>
+  《咒术回战》© 芥见下下／集英社·MAPPA · 梗内容整理自 B站弹幕、贴吧、微博等社区</p>
+</footer>
+
+<script>
+/* ================= 数据 ================= */
+const MEMES = [
+  /* ---- 名台词 ---- */
+  {name:"我是最强的",cat:"台词",arc:"少年篇",src:"动画第1话",heat:100,quote:"别担心，我是最强的。",desc:"五条悟登场的自我宣言，全作最著名台词。此后每一次出手都在为这句话作注脚。"},
+  {name:"领域展开",cat:"台词",arc:"全网通用",src:"全篇通用",heat:96,quote:"领域展开——",desc:"高位咒术师的必杀宣言。四字一出必有大招，弹幕日常刷屏的仪式感之源。"},
+  {name:"无量空处",cat:"台词",arc:"涩谷事变篇",src:"动画第二季",heat:94,quote:"领域展开·无量空处。",desc:"五条悟的领域，0.2秒内给对手灌入“无限的信息”。对面醒来第一句：我在哪，我是谁。"},
+  {name:"伏魔御厨子",cat:"台词",arc:"少年篇",src:"动画第3话起",heat:90,quote:"领域展开·伏魔御厨子。",desc:"宿傩的领域展开，斩击无差别覆盖全场。吧友戏称“御膳房开饭，人手一刀”。"},
+  {name:"我有一个梦想",cat:"台词",arc:"怀玉·玉折篇",src:"动画第二季前半",heat:89,quote:"我有一个梦想。",desc:"夏油杰的“新世界”宣言。因为画面感太强，配图早已成为万能表情包。"},
+  {name:"兄弟",cat:"台词",arc:"京都姐妹校交流会篇",src:"动画第22话",heat:88,quote:"兄弟！",desc:"东堂葵认定虎杖是“挚友”后的高频称呼，一嗓子下去友情浓度直接超标。"},
+  {name:"不加班",cat:"台词",arc:"少年篇",src:"动画第8话",heat:87,quote:"我不想加班。",desc:"七海建人的处世哲学，社畜咒术师的最后尊严，全体打工人当场认亲。"},
+  {name:"爱是最扭曲的诅咒",cat:"台词",arc:"剧场版0",src:"剧场版《咒术回战0》",heat:82,quote:"爱，是最扭曲的诅咒。",desc:"五条悟对乙骨与里香故事的点评，金句被无数二创引用，纯爱与诅咒一体两面。"},
+  {name:"人类真傲慢",cat:"台词",arc:"少年篇",src:"动画第5话",heat:80,quote:"人类真是傲慢啊。",desc:"花御对人类文明的名言，如今被用于一切“人类作死现场”的弹幕与评论区。"},
+  {name:"正确地死去",cat:"台词",arc:"少年篇",src:"动画第1话",heat:79,quote:"在众人的围绕下，正确地死去。",desc:"爷爷的遗言，虎杖的人生纲领。整部作品其实都在讲这十个字。"},
+  {name:"解与捌",cat:"台词",arc:"少年篇",src:"动画第2话",heat:84,quote:"解。“捌。",desc:"宿傩的斩击招式名。一字之差威力天壤之别，弹幕提示：“捌”字一出，快逃。"},
+  {name:"鲣鱼干",cat:"台词",arc:"少年篇",src:"动画第6话",heat:78,quote:"鲣鱼干（意思是快跑）。",desc:"狗卷棘只说食物词汇，“鲣鱼干”“明太子”全靠队友同声传译，咒高第一谜语人。"},
+  {name:"欧尼酱",cat:"台词",arc:"少年篇",src:"动画第10话",heat:81,quote:"欧尼酱——",desc:"胀相认亲现场：一声“哥哥”喊出口，虎杖的血统学当场崩塌，爷爷的骨灰都惊了。"},
+  {name:"你被真人摸过吗",cat:"台词",arc:"幼鱼与逆罚篇",src:"动画第15话",heat:83,quote:"没事，我摸摸。",desc:"真人触碰即可改造灵魂。网友引申义：今天你被诅咒了吗？被摸过的都沉默了。"},
+  {name:"灶",cat:"台词",arc:"涩谷事变篇",src:"动画第二季后半",heat:76,quote:"灶。",desc:"宿傩的火焰招式。“开灶”之后涉谷寸草不生，弹幕：这一锅炖的是整个涩谷。"},
+  {name:"自闭圆顿裹",cat:"台词",arc:"涩谷事变篇",src:"动画第二季后半",heat:77,quote:"领域展开·自闭圆顿裹。",desc:"真人的领域展开。名字自带“自闭”，宣布的瞬间弹幕集体笑场，恐怖氛围碎了一地。"},
+
+  /* ---- 名场面 ---- */
+  {name:"吞下宿傩之指",cat:"场面",arc:"少年篇",src:"动画第1话",heat:86,quote:"",desc:"为救伏黑惠，虎杖一口吞下特级咒物，咒术师人生正式开篇。史上最强的一口。"},
+  {name:"狱门疆封印五条",cat:"场面",arc:"涩谷事变篇",src:"动画第二季后半",heat:94,quote:"",desc:"封印落地那集，全咒术界的天塌了。B站弹幕罕见地集体沉默三秒。"},
+  {name:"五条悟摘眼罩",cat:"场面",arc:"涩谷事变篇",src:"动画第二季后半",heat:90,quote:"",desc:"摘下眼罩=对面已经没了。B站流量密码名场面，播放量最高的十几秒。"},
+  {name:"腰斩",cat:"场面",arc:"新宿决战篇",src:"漫画236话",heat:97,quote:"",desc:"五条悟之死。全网服务器过载的一天，“悟子”集体请假，贴吧连夜盖楼十层起。"},
+  {name:"世界斩击",cat:"场面",arc:"新宿决战篇",src:"漫画235话",heat:89,quote:"",desc:"宿傩把斩击范围扩展到“世界”本身，物理意义上的不讲理，规则党的噩梦。"},
+  {name:"虎杖黑化现场",cat:"场面",arc:"幼鱼与逆罚篇",src:"动画第18话",heat:81,quote:"",desc:"顺平之死后，虎杖沉默着追打真人。全季最压抑的名场面，没人刷弹幕。"},
+  {name:"甚尔夜袭五条",cat:"场面",arc:"怀玉·玉折篇",src:"动画第二季前半",heat:80,quote:"",desc:"天与咒缚的体术天花板，把尚未觉醒的最强捅了个对穿。最强也有心跳暂停的一集。"},
+  {name:"真希屠禅院家",cat:"场面",arc:"死灭回游篇",src:"漫画中期",heat:82,quote:"",desc:"天与咒缚完全体的真希“回门”，禅院家一夜清户。吧友：这波叫物理继承。"},
+  {name:"乙骨借体五条",cat:"场面",arc:"新宿决战篇",src:"漫画261话",heat:84,quote:"",desc:"“五条复活了，但只有壳。”乙骨使用五条悟的身体作战，贴吧全席震惊一整周。"},
+  {name:"处刑人之剑",cat:"场面",arc:"新宿决战篇",src:"漫画后期",heat:77,quote:"",desc:"律师日车宽见以领域“诛伏之座”审判宿傩。最燃的一集法庭辩论，庭上没有律师，全是咒力。"},
+
+  /* ---- B站弹幕梗 ---- */
+  {name:"涩谷事变，启动",cat:"弹幕",arc:"涩谷事变篇",src:"动画第二季后半",heat:93,quote:"",desc:"大事件开场弹幕。B站名场面浓度巅峰期的标准开场白，一集里能刷十遍。"},
+  {name:"SPECIALZ一响",cat:"弹幕",arc:"涩谷事变篇",src:"动画第二季 OP",heat:88,quote:"",desc:"涩谷事变OP《SPECIALZ》前奏一响，弹幕齐刷“事变开始”“爷青回”。OP即巅峰。"},
+  {name:"两情相悦",cat:"弹幕",arc:"京都姐妹校交流会篇",src:"动画第23话",heat:86,quote:"",desc:"东堂与虎杖心意相通打出连锁黑闪，弹幕齐刷“两情相悦”。友情，仅限友情。"},
+  {name:"MAPPA经费爆炸",cat:"弹幕",arc:"全网通用",src:"全篇通用",heat:82,quote:"",desc:"作画名场面必刷“经费在燃烧”，下一句通常是“MAPPA又加班”。社畜的战损以作画计价。"},
+  {name:"无量空处刷屏",cat:"弹幕",arc:"涩谷事变篇",src:"动画第二季后半",heat:84,quote:"",desc:"0.2秒无量空处名场面，弹幕从“领域展开”一路刷到“我在哪”“我是谁”。"},
+  {name:"五条悟自带BGM",cat:"弹幕",arc:"全网通用",src:"全篇通用",heat:75,quote:"",desc:"最强登场自带音效，BGM一响弹幕齐刷“最强驾到”，宿傩都得等他炫完。"},
+  {name:"完结撒花",cat:"弹幕",arc:"完结篇",src:"漫画271话",heat:70,quote:"",desc:"漫画完结时B站弹幕的大型告别现场：撒花与流泪齐飞，烂尾与神作共吵。"},
+
+  /* ---- 转盘梗 ---- */
+  {name:"死亡转盘",cat:"转盘",arc:"全网通用",src:"B站二创",heat:95,quote:"本轮转盘结果：请看下话。",desc:"传说芥见下下的书桌上有一台转盘：转到谁，下一话谁领便当。七海、五条、钉崎……无一幸免。"},
+  {name:"立flag转盘",cat:"转盘",arc:"全网通用",src:"B站二创",heat:87,quote:"打完这仗我就……",desc:"角色只要说“打完这仗我就回老家结婚”，转盘自动启动。flag与便当，同日发货。"},
+  {name:"复活赛转盘",cat:"转盘",arc:"全网通用",src:"贴吧×B站二创",heat:84,quote:"这周再转一次。",desc:"236话之后，五条悟粉丝每周转一次“复活赛转盘”。转了两年，终究没打赢。"},
+  {name:"芥见便当铺",cat:"转盘",arc:"全网通用",src:"贴吧二创",heat:80,quote:"特级便当，日产一份。",desc:"吧友戏称作者开了便当铺，特级便当日产一份，转盘就是菜单，角色就是库存。"},
+  {name:"转盘抽角色",cat:"转盘",arc:"全网通用",src:"B站互动视频",heat:76,quote:"抽到宿傩=身体暂时不归你。",desc:"互动视频“人生转盘”：抽到五条悟=欧皇认证，抽到宿傩=接下来一个月当容器。"},
+  {name:"今天你转了吗",cat:"转盘",arc:"全网通用",src:"贴吧问候语",heat:72,quote:"转了，没转出惠。",desc:"每周五漫画更新前吧友互相问候，指转盘预测本轮死者。比“吃了吗”更真实。"},
+
+  /* ---- 贴吧梗 ---- */
+  {name:"全盛宿傩",cat:"贴吧",arc:"全网通用",src:"贴吧战帖",heat:92,quote:"全盛宿傩能不能打过五条悟？",desc:"万年战力帖。盖楼十万层，战力榜吵到体质学，至今无解，永不毕业。"},
+  {name:"烂尾",cat:"贴吧",arc:"完结篇",src:"漫画271话",heat:90,quote:"",desc:"完结后贴吧大型辩论现场，“烂尾”与“神作”互喷三天三夜，谁也说服不了谁。"},
+  {name:"还我惠",cat:"贴吧",arc:"新宿决战篇",src:"漫画中期连载",heat:88,quote:"还我惠！",desc:"伏黑惠被宿傩夺舍大半年，吧友每日打卡“还我惠”。最终话才等到本尊回归。"},
+  {name:"芥见下下你个畜生",cat:"贴吧",arc:"全网通用",src:"贴吧评论区",heat:86,quote:"",desc:"每逢发便当必出现的评论。褒义贬义全看语境，爱之深恨之切的粉丝特供。"},
+  {name:"复活赛",cat:"贴吧",arc:"新宿决战篇",src:"漫画后期",heat:85,quote:"打赢复活赛！",desc:"“打赢复活赛”——五条悟粉丝两年执念的代名词。每周五开赛，每周五败北。"},
+  {name:"悟厨宿厨对线",cat:"贴吧",arc:"全网通用",src:"贴吧日常",heat:83,quote:"",desc:"最强厨vs最恶厨，贴吧与超话的每日保留节目。战力吵到血缘，再吵到商业价值。"},
+  {name:"每周五守情报",cat:"贴吧",arc:"全网通用",src:"贴吧日常",heat:74,quote:"",desc:"泄露情报周五晚准时抵达。看过情报的老哥是全吧最尊贵的人，没看过的自觉闭麦。"},
+  {name:"赢麻了",cat:"贴吧",arc:"全网通用",src:"贴吧日常",heat:68,quote:"",desc:"咒回吧日常阴阳怪气三件套之一。谁赢了不重要，反正赢麻了。"},
+
+  /* ---- 角色绰号 ---- */
+  {name:"脑花",cat:"绰号",arc:"涩谷事变篇",src:"动画第二季后半",heat:93,quote:"",desc:"占据夏油杰大脑的千年老妖羂索，粉丝爱称“脑花”。反派浓度天花板，计划跨度千年。"},
+  {name:"纯爱战士",cat:"绰号",arc:"剧场版0",src:"剧场版《咒术回战0》",heat:88,quote:"",desc:"乙骨忧太。为青梅竹马诅咒全人类的男人，纯爱战神官方认证，里香亲测有效。"},
+  {name:"火山头",cat:"绰号",arc:"少年篇",src:"动画第8话",heat:81,quote:"",desc:"漏瑚。特级咒灵的尊严在“五条悟单手接”面前碎了一地，此后只配当战力计量单位。"},
+  {name:"娜娜明",cat:"绰号",arc:"少年篇",src:"动画第8话",heat:79,quote:"",desc:"七海建人的粉丝爱称。社畜咒术师，“娜娜明今天也不加班”是粉丝最大愿望。"},
+  {name:"悟子",cat:"绰号",arc:"全网通用",src:"粉丝昵称",heat:76,quote:"",desc:"五条悟的孩子气昵称，粉丝自称“悟厨”。最强也是全网最想抱回家的一只。"},
+  {name:"虎子",cat:"绰号",arc:"全网通用",src:"粉丝昵称",heat:75,quote:"",desc:"虎杖悠仁。全作最惨打工人，宿傩手指供应站常客，工资是爷爷的遗言。"},
+  {name:"宿宝",cat:"绰号",arc:"全网通用",src:"粉丝昵称",heat:77,quote:"",desc:"两面宿傩。反派魅力天花板，“宿宝今天也随心所欲”，粉丝一边骂一边宠。"},
+  {name:"熊猫",cat:"绰号",arc:"少年篇",src:"动画第5话",heat:66,quote:"",desc:"名字即本体。夜蛾正道的“儿子”，咒高三年级的吉祥物，突猛进熊猫流使用者。"},
+
+  /* ---- 名设定 ---- */
+  {name:"六眼",cat:"设定",arc:"少年篇",src:"五条家血脉",heat:78,quote:"",desc:"五条家血脉天赋，看穿咒力流动的“外挂级视力”。六眼一开，咒力管够。"},
+  {name:"天与咒缚",cat:"设定",arc:"全网通用",src:"全篇核心规则",heat:78,quote:"",desc:"以身体束缚换取超常之力的规则。真希、甚尔、机械丸都是重度用户，代价文学代表。"},
+  {name:"黑闪",cat:"设定",arc:"幼鱼与逆罚篇",src:"动画第19话",heat:91,quote:"",desc:"咒力与物理冲击误差0.000001秒的现象。虎杖vs花御一战成名，黑闪=欧皇时刻。"},
+  {name:"宿傩之指",cat:"设定",arc:"少年篇",src:"全篇麦高芬",heat:74,quote:"",desc:"特级咒物，全篇共20根。虎杖一个人吃成了收藏家，每一根都让咒灵闻风而来。"},
+  {name:"死灭回游",cat:"设定",arc:"死灭回游篇",src:"漫画中期",heat:76,quote:"",desc:"羂索发起的全国咒术师大逃杀。规则即诅咒，参与者全员入局，退场即退场。"},
+  {name:"满象",cat:"设定",arc:"全网通用",src:"伏黑惠式神",heat:79,quote:"",desc:"伏黑惠的王牌式神。“调伏”仪式之后才能召唤，大象踩场名场面，一象下去全场安静。"}
+];
+
+const ARCS = [
+  {name:"少年篇",tag:"动画第一季",desc:"虎杖吞下手指，咒术师人生开始。五条悟登场，宿傩开饭。"},
+  {name:"幼鱼与逆罚篇",tag:"动画第一季",desc:"吉野顺平的故事，全作最温柔的刀。"},
+  {name:"京都姐妹校交流会篇",tag:"动画第一季",desc:"校际大乱斗，东堂认亲现场。"},
+  {name:"剧场版0",tag:"剧场版《咒术回战0》",desc:"乙骨忧太与里香，纯爱的起点。"},
+  {name:"怀玉·玉折篇",tag:"动画第二季·前半",desc:"五条悟的过去，最强觉醒的代价。"},
+  {name:"涩谷事变篇",tag:"动画第二季·后半",desc:"万圣夜的涉谷，全作最大转折点。"},
+  {name:"死灭回游篇",tag:"漫画中期",desc:"全国咒术师大逃杀，规则即诅咒。"},
+  {name:"新宿决战篇",tag:"漫画最终决战",desc:"最终决战，全员对宿傩。"},
+  {name:"完结篇",tag:"漫画271话",desc:"撒花与争吵齐飞，青春散场。"},
+  {name:"全网通用",tag:"B站 × 贴吧",desc:"梗不在漫画里，在评论区、在转盘上、在每周五的情报里。"}
+];
+
+const QUIZ = [
+  {q:"五条悟的招牌自我宣言是？",opts:["我是最强的","我是最帅的","我是最忙的","我是最早的"],a:0},
+  {q:"宿傩的领域展开叫什么？",opts:["无量空处","伏魔御厨子","自闭圆顿裹","嵌合暗翳庭"],a:1},
+  {q:"“脑花”指的是哪个角色？",opts:["真人","羂索","漏瑚","花御"],a:1},
+  {q:"B站“死亡转盘”的规则是？",opts:["转到谁，谁下一话领便当","转到谁，谁原地复活","转到谁，谁请客吃饭","转到谁，谁改剧本"],a:0},
+  {q:"七海建人的人生信条是？",opts:["绝不加班","天天加班","带薪摸鱼","全勤奖最重要"],a:0},
+  {q:"“全盛宿傩”是哪里吵不完的话题？",opts:["贴吧","知乎","小红书","微博"],a:0},
+  {q:"漫画236话发生了什么？",opts:["五条悟被腰斩","宿傩公开道歉","虎杖宣布退休","全员大团圆"],a:0},
+  {q:"狗卷棘说话有什么特点？",opts:["只说食物","只说方言","只说英文","只说反话"],a:0},
+  {q:"“爱是最扭曲的诅咒”出自哪部？",opts:["剧场版0","动画第一季","动画第二季","漫画结局"],a:0},
+  {q:"“还我惠”的吧友在还愿什么？",opts:["伏黑惠夺回自己的身体","惠的新发型","惠的家具","惠的假期作业"],a:0},
+  {q:"《SPECIALZ》是什么？",opts:["涩谷事变篇OP","第二季ED","剧场版主题曲","游戏BGM"],a:0},
+  {q:"虎杖的人生纲领来自？",opts:["爷爷的遗言","五条的建议","宿傩的嘲讽","电视广告"],a:0}
+];
+
+const WHEEL_CHARS = ["五条悟","虎杖悠仁","伏黑惠","钉崎野蔷薇","七海建人","东堂葵","禅院真希","乙骨忧太","夏油杰","两面宿傩","真人","脑花"];
+const WHEEL_COLORS = ["#8b1a2b","#1b1b2c","#26264a","#7a2231","#22223a","#3a1a4a","#4a1a22","#1a2a4a","#33224d","#2b1220","#122a33","#3d1f4f"];
+const BENTO_MSGS = [
+  "芥见下下的转盘停在了你的名字上。",
+  "本轮便当已确认，MAPPA负责掌勺。",
+  "我还有话没说完——转盘：没有了。",
+  "刚立了个flag，转盘应声而转。",
+  "死者诞生。吧友：蚌埠住了，绷不住了。",
+  "已进入复活赛候选名单（虽然大概率没用）。",
+  "转盘：转谁不重要，重要的是惠还没出来。",
+  "被转盘选中。五条悟表示无能为力，因为他自己也转过了。",
+  "转盘一响，全站弹幕一片哀嚎。",
+  "凭什么是我？——转盘：凭你是特级（笑）。"
+];
+
+/* ================= 通用 ================= */
+const $ = s => document.querySelector(s);
+function gradeOf(h){ return h>=90?["特级","g-tokko"]:h>=80?["一级","g-1"]:h>=72?["准一级","g-jun"]:["二级","g-2"]; }
+function catLabel(c){ return {台词:"名台词",场面:"名场面",弹幕:"B站弹幕梗",转盘:"转盘梗",贴吧:"贴吧梗",绰号:"角色绰号",设定:"名设定"}[c]; }
+function cardHTML(m){
+  const [g,gc] = gradeOf(m.heat);
+  return `<div class="card">
+    <div class="row1"><span class="grade ${gc}">${g}</span><span class="cat c-${m.cat}">${catLabel(m.cat)}</span></div>
+    <h3>${m.name}</h3>
+    <div class="src">${m.arc} · ${m.src}</div>
+    <div class="desc">${m.desc}</div>
+    ${m.quote?`<div class="quote">${m.quote}</div>`:""}
+    <div>
+      <div class="heatbar"><i style="width:${m.heat}%"></i></div>
+      <div class="heatrow"><span>梗浓度</span><span>${m.heat}</span></div>
+    </div>
+  </div>`;
+}
+
+/* ================= 视图切换 ================= */
+function switchView(v){
+  document.querySelectorAll(".view").forEach(el=>el.classList.remove("active"));
+  $("#view-"+v).classList.add("active");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===v));
+  window.scrollTo({top:0});
+}
+$("#nav").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(b) switchView(b.dataset.view);
+});
+
+/* ================= 首页：搜索 + 热词 ================= */
+$("#statMemes").textContent = MEMES.length;
+
+function renderResults(){
+  const kw = $("#searchInput").value.trim().toLowerCase();
+  const cat = $("#catSelect").value;
+  let list = MEMES;
+  if(cat) list = list.filter(m=>m.cat===cat);
+  if(kw) list = list.filter(m=>(m.name+m.desc+m.quote+m.arc+m.src).toLowerCase().includes(kw));
+  const noQuery = !kw && !cat;
+  if(noQuery){ list=[...list].sort((a,b)=>b.heat-a.heat).slice(0,8); $("#resultTitle").textContent="热门梗速览"; }
+  else $("#resultTitle").textContent = kw?`“${kw}”的搜索结果`:"全部梗";
+  $("#resultCnt").textContent = noQuery?"按热度 Top 8":`共 ${list.length} 条`;
+  $("#resultGrid").innerHTML = list.length?list.map(cardHTML).join(""):
+    `<div class="empty">没有找到相关梗。也许它太冷门，或者已经被<b>腰斩</b>了——换个关键词试试？</div>`;
+}
+$("#searchInput").addEventListener("input",renderResults);
+$("#catSelect").addEventListener("change",renderResults);
+$("#searchBtn").addEventListener("click",renderResults);
+function quick(k){ $("#searchInput").value=k; switchView("home"); renderResults(); }
+
+/* 热词云：Top 14 分三档 */
+(function(){
+  const top=[...MEMES].sort((a,b)=>b.heat-a.heat).slice(0,14);
+  $("#hotwords").innerHTML = top.map((m,i)=>{
+    const cls = i<3?"l1":i<8?"l2":"";
+    return `<span class="hw ${cls}" onclick="quick('${m.name}')">${m.name}</span>`;
+  }).join("");
+})();
+renderResults();
+
+/* ================= 分篇浏览 ================= */
+(function(){
+  $("#arcList").innerHTML = ARCS.map(a=>{
+    const ms = MEMES.filter(m=>m.arc===a.name).sort((x,y)=>y.heat-x.heat);
+    return `<div class="arc">
+      <div class="arc-head"><h3>${a.name}</h3><span class="tag">${a.tag} · ${ms.length} 个梗</span></div>
+      <p>${a.desc}</p>
+      <div class="chips">${ms.map(m=>{
+        const [g]=gradeOf(m.heat);
+        return `<span class="chip" onclick="quick('${m.name}')">${m.name}<small>${g} · ${m.heat}</small></span>`;
+      }).join("")}</div>
+    </div>`;
+  }).join("");
+})();
+
+/* ================= 热梗排行 ================= */
+(function(){
+  const list=[...MEMES].sort((a,b)=>b.heat-a.heat);
+  $("#rankList").innerHTML = list.map((m,i)=>`
+    <div class="r-row ${i<3?"top":""}">
+      <span class="r-num">${String(i+1).padStart(2,"0")}</span>
+      <span class="r-name">${m.name}</span>
+      <span class="r-cat">${catLabel(m.cat)}</span>
+      <span class="r-bar"><i style="width:${m.heat}%"></i></span>
+      <span class="r-heat">${m.heat}</span>
+    </div>`).join("");
+})();
+
+/* ================= 梗学问答 ================= */
+let qi=0,qs=0;
+function quizRender(){
+  const box=$("#quizBox");
+  if(qi>=QUIZ.length){
+    const t = qs>=12?["特级梗学家","你把评论区都背下来了，芥见都要敬你三分。"]:
+              qs>=9 ?["一级梗学家","浓度合格，可以进吧对线了。"]:
+              qs>=6 ?["准一级梗学徒","还差一点，建议回去把转盘再转两圈。"]:
+                     ["二级咒术见习生","你怕不是只看过五条悟的脸。"];
+    box.innerHTML=`<div class="quiz-result">
+      <div style="color:var(--sub);font-size:14px">最终得分</div>
+      <div class="big">${qs} / ${QUIZ.length}</div>
+      <div style="font-size:20px;font-weight:800">${t[0]}</div>
+      <p>${t[1]}</p>
+      <button class="btn" style="margin-top:18px" onclick="qi=0;qs=0;quizRender()">再来一轮</button>
+    </div>`; return;
+  }
+  const q=QUIZ[qi];
+  box.innerHTML=`<div class="quiz-top"><span>第 ${qi+1} / ${QUIZ.length} 题</span><span>得分 ${qs}</span></div>
+    <div class="quiz-q">${q.q}</div>
+    <div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join("")}</div>
+    <div class="quiz-foot"><span class="fb" id="quizFb"></span>
+      <button class="btn" id="quizNext" disabled>${qi===QUIZ.length-1?"看结果":"下一题"}</button></div>`;
+  box.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
+    const i=+b.dataset.i, ok=i===q.a;
+    box.querySelectorAll(".opt").forEach((x,j)=>{ x.disabled=true; if(j===q.a)x.classList.add("right"); });
+    if(!ok) b.classList.add("wrong");
+    if(ok) qs++;
+    $("#quizFb").textContent = ok?"答对了，浓度+1":"答错了，梗浓度-1";
+    $("#quizNext").disabled=false;
+  }));
+  $("#quizNext").addEventListener("click",()=>{ qi++; quizRender(); });
+}
+quizRender();
+
+/* ================= 死亡转盘 ================= */
+(function(){
+  const wheel=$("#wheel"), seg=360/WHEEL_CHARS.length;
+  wheel.style.background=`conic-gradient(${WHEEL_CHARS.map((c,i)=>`${WHEEL_COLORS[i]} ${i*seg}deg ${(i+1)*seg}deg`).join(",")})`;
+  WHEEL_CHARS.forEach((n,i)=>{
+    const s=document.createElement("span");
+    s.textContent=n;
+    s.style.transform=`translate(-50%,-50%) rotate(${i*seg+seg/2}deg) translateY(-105px) rotate(${-(i*seg+seg/2)}deg)`;
+    wheel.appendChild(s);
+  });
+  let rot=0, spinning=false;
+  const cntKey="jjk_bento_count";
+  function updCnt(){ $("#wheelCount").textContent=`本转盘已累计送出 ${localStorage.getItem(cntKey)||0} 份便当`; }
+  updCnt();
+  $("#spinBtn").addEventListener("click",()=>{
+    if(spinning) return; spinning=true;
+    $("#bento").classList.remove("show"); $("#spinBtn").disabled=true;
+    const idx=Math.floor(Math.random()*WHEEL_CHARS.length);
+    const target=idx*seg+seg/2;
+    const cur=((rot%360)+360)%360;
+    const delta=360*5+(((360-target)%360-cur+360)%360)+Math.random()*14-7;
+    rot+=delta;
+    wheel.style.transform=`rotate(${rot}deg)`;
+    setTimeout(()=>{
+      spinning=false; $("#spinBtn").disabled=false;
+      const n=WHEEL_CHARS[idx];
+      $("#bentoName").textContent=n+" 领便当";
+      $("#bentoMsg").textContent=BENTO_MSGS[Math.floor(Math.random()*BENTO_MSGS.length)];
+      $("#bento").classList.add("show");
+      localStorage.setItem(cntKey,(+localStorage.getItem(cntKey)||0)+1);
+      updCnt();
+    },4150);
+  });
+})();
+</script>
+</body>
 </html>
