@@ -137,6 +137,26 @@
   .c-贴吧{color:#fb923c;border-color:rgba(251,146,60,.4)}
   .c-绰号{color:var(--green);border-color:rgba(74,222,128,.4)}
   .c-设定{color:#7dd3fc;border-color:rgba(125,211,252,.4)}
+  .c-视频{color:#ff6b9d;border-color:rgba(255,107,157,.5);background:rgba(255,107,157,.06)}
+
+  /* ---------- video section ---------- */
+  .vid-box{
+    display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line2);border-radius:16px;padding:22px;
+  }
+  @media(max-width:760px){.vid-box{grid-template-columns:1fr}}
+  .vid-cover{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line2)}
+  .vid-cover img{width:100%;display:block;aspect-ratio:16/10.5;object-fit:cover}
+  .vid-cover .play{
+    position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.25);
+    color:#fff;font-weight:800;font-size:14px;letter-spacing:2px;
+  }
+  .vid-info h3{font-size:19px;font-weight:800;margin-bottom:8px}
+  .vid-info p{font-size:13.5px;color:var(--sub)}
+  .vid-info .meta{font-size:12px;color:var(--faint);margin:8px 0 14px;line-height:1.9}
+  #bplayer{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;margin-top:18px;background:#000}
+  .vid-note{font-size:12px;color:var(--faint);margin-top:12px}
   .card h3{font-size:18px;font-weight:800;letter-spacing:.5px}
   .card .src{font-size:12px;color:var(--faint)}
   .card .desc{font-size:13.5px;color:var(--sub);flex:1}
@@ -267,6 +287,7 @@
       <button data-view="rank">热梗排行</button>
       <button data-view="quiz">梗学问答</button>
       <button data-view="wheel">死亡转盘</button>
+      <button data-view="video">梗视频</button>
     </nav>
   </div>
 </header>
@@ -290,6 +311,7 @@
           <option value="贴吧">贴吧梗</option>
           <option value="绰号">角色绰号</option>
           <option value="设定">名设定</option>
+          <option value="视频">B站视频梗</option>
         </select>
         <button id="searchBtn">搜一下</button>
       </div>
@@ -343,6 +365,29 @@
       </div>
       <div class="wheel-count" id="wheelCount"></div>
     </div>
+  </section>
+
+  <!-- ============ 梗视频 ============ -->
+  <section id="view-video" class="view">
+    <div class="sec-head" style="margin-top:0"><h2>名梗合集视频</h2><span class="cnt">本期热梗来源 · B站</span></div>
+    <div class="vid-box">
+      <div class="vid-cover">
+        <img src="https://i0.hdslb.com/bfs/archive/bf410eff34bd49fd2ef9257757feed2ab8b51478.jpg" referrerpolicy="no-referrer" alt="名梗合集视频封面">
+        <div class="play">点右侧播放器观看</div>
+      </div>
+      <div class="vid-info">
+        <h3>【名梗合集】你才是挑战者哦！！咒术近期所有热门梗盘点</h3>
+        <p>人外魔境新宿决战篇名梗大盘点：会赢的、你才是挑战者哦、腰斩、大型纪录片……本站「视频梗」类目的梗均整理自这期名梗合集及其评论区。</p>
+        <div class="meta">
+          UP主：螺丝儿饿了 · 2024-05-05 · 播放 69.9万 · 弹幕 1.5万<br>
+          视频地址：<a href="https://b23.tv/mcw9Ip7" target="_blank" rel="noopener" style="color:var(--cyan)">b23.tv/mcw9Ip7</a>
+        </div>
+        <iframe id="bplayer" src="https://player.bilibili.com/player.html?bvid=BV18m421H79Q&page=1&high_quality=1&danmaku=1&autoplay=0" scrolling="no" allowfullscreen></iframe>
+        <p class="vid-note">视频版权归原作者「螺丝儿饿了」所有，本站仅作梗来源整理与引用。若加载失败请点击上方链接前往 B 站观看。</p>
+      </div>
+    </div>
+    <div class="sec-head"><h2>本期视频梗速览</h2><span class="cnt">整理自本期视频与评论区</span></div>
+    <div id="videoGrid" class="grid"></div>
   </section>
 
 </main>
@@ -428,7 +473,15 @@ const MEMES = [
   {name:"黑闪",cat:"设定",arc:"幼鱼与逆罚篇",src:"动画第19话",heat:91,quote:"",desc:"咒力与物理冲击误差0.000001秒的现象。虎杖vs花御一战成名，黑闪=欧皇时刻。"},
   {name:"宿傩之指",cat:"设定",arc:"少年篇",src:"全篇麦高芬",heat:74,quote:"",desc:"特级咒物，全篇共20根。虎杖一个人吃成了收藏家，每一根都让咒灵闻风而来。"},
   {name:"死灭回游",cat:"设定",arc:"死灭回游篇",src:"漫画中期",heat:76,quote:"",desc:"羂索发起的全国咒术师大逃杀。规则即诅咒，参与者全员入局，退场即退场。"},
-  {name:"满象",cat:"设定",arc:"全网通用",src:"伏黑惠式神",heat:79,quote:"",desc:"伏黑惠的王牌式神。“调伏”仪式之后才能召唤，大象踩场名场面，一象下去全场安静。"}
+  {name:"满象",cat:"设定",arc:"全网通用",src:"伏黑惠式神",heat:79,quote:"",desc:"伏黑惠的王牌式神。“调伏”仪式之后才能召唤，大象踩场名场面，一象下去全场安静。"},
+
+  /* ---- B站视频梗（整理自名梗合集视频 BV18m421H79Q）---- */
+  {name:"会赢的",cat:"视频",arc:"全网通用",src:"B站名梗合集·人外魔境新宿决战篇",heat:96,quote:"我打宿傩？会赢的！",desc:"新宿决战篇第一出圈台词梗。自信到离谱的宣战词，弹幕用它给一切立flag行为火上浇油：会赢的（输麻的）。"},
+  {name:"你才是挑战者哦",cat:"视频",arc:"全网通用",src:"B站名梗合集·人外魔境新宿决战篇",heat:94,quote:"你才是挑战者哦。",desc:"把“被挑战”的姿态反手扣回对方头上的名台词，攻守之势异也。B站名梗合集直接拿它当了标题。"},
+  {name:"你觉得2024年最搞笑的漫画是哪一部",cat:"视频",arc:"全网通用",src:"B站名梗合集·高赞评论区",heat:90,quote:"嗯……咒术回战吧，不过这只是我个人的观点。",desc:"采访体万能模板。一本正经、层层递进、最后图穷匕见——用于一切“含蓄锐评”场合，视频评论区2409赞复刻现场。"},
+  {name:"一刻都没有时间为其哀悼",cat:"视频",arc:"全网通用",src:"B站大型纪录片二创",heat:88,quote:"我第一时间赶到现场，不是哀悼，是先跳个舞。",desc:"“大型纪录片”体整活：五条悟下线后，全网没有一刻为他哀悼——都在赶制跳舞视频和二创。悼念与整活齐飞。"},
+  {name:"五条悟驾驶员",cat:"视频",arc:"新宿决战篇",src:"B站名梗合集·高赞评论区",heat:86,quote:"把五条本人算上，最强的驾驶员也是乙骨。",desc:"乙骨借体五条之后，“驾驶五条悟”成了梗：讨论五条身体的最佳驾驶员是谁。评论区高赞结论：乙骨，遥遥领先。"},
+  {name:"现代最强vs史上最强",cat:"视频",arc:"全网通用",src:"B站名梗合集·人外魔境新宿决战篇",heat:84,quote:"现代最强，对上史上最强。",desc:"五条悟vs宿傩的官方对决框架，也是弹幕一切“强强对话”的通用标题：现代最强碰上史上最强，坐好扶稳。"}
 ];
 
 const ARCS = [
@@ -477,7 +530,7 @@ const BENTO_MSGS = [
 /* ================= 通用 ================= */
 const $ = s => document.querySelector(s);
 function gradeOf(h){ return h>=90?["特级","g-tokko"]:h>=80?["一级","g-1"]:h>=72?["准一级","g-jun"]:["二级","g-2"]; }
-function catLabel(c){ return {台词:"名台词",场面:"名场面",弹幕:"B站弹幕梗",转盘:"转盘梗",贴吧:"贴吧梗",绰号:"角色绰号",设定:"名设定"}[c]; }
+function catLabel(c){ return {台词:"名台词",场面:"名场面",弹幕:"B站弹幕梗",转盘:"转盘梗",贴吧:"贴吧梗",绰号:"角色绰号",设定:"名设定",视频:"B站视频梗"}[c]; }
 function cardHTML(m){
   const [g,gc] = gradeOf(m.heat);
   return `<div class="card">
@@ -597,6 +650,12 @@ function quizRender(){
   $("#quizNext").addEventListener("click",()=>{ qi++; quizRender(); });
 }
 quizRender();
+
+/* ================= 梗视频区 ================= */
+(function(){
+  const list=MEMES.filter(m=>m.cat==="视频").sort((a,b)=>b.heat-a.heat);
+  $("#videoGrid").innerHTML=list.map(cardHTML).join("");
+})();
 
 /* ================= 死亡转盘 ================= */
 (function(){
