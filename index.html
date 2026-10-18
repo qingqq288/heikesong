@@ -365,7 +365,7 @@
   <section id="view-wheel" class="view">
     <div class="sec-head" style="margin-top:0"><h2>死亡转盘</h2><span class="cnt">传说芥见下下用转盘决定谁领便当</span></div>
     <div class="wheel-wrap">
-      <p class="wheel-note">规则：转到谁，谁下一话领便当。转到<b style="color:var(--cyan)">五条悟</b>或<b style="color:var(--cyan)">两面宿傩</b>时，自动播放《雨爱》送行。flag 慎立，遗言趁早。</p>
+      <p class="wheel-note">规则：转到谁，谁下一话领便当。<b style="color:var(--cyan)">五条悟</b>与<b style="color:var(--cyan)">两面宿傩</b>概率约为其他角色的 3 倍，且连续 2 次没出他俩，第 3 次必出——出即零前摇直插《雨爱》播放。flag 慎立，遗言趁早。</p>
       <div class="wheel-area">
         <div class="pointer"></div>
         <div id="wheel"></div>
@@ -384,7 +384,7 @@
           <button id="rainloveClose">停止播放 ×</button>
         </div>
         <div id="rainloveFrame"></div>
-        <p class="rain-tip">转盘把便当发给了最强/最恶，按惯例播放「雨爱版」送行。走好。</p>
+        <p class="rain-tip">最强/最恶领便当，零前摇直接开送行。走好。</p>
       </div>
     </div>
   </section>
@@ -433,7 +433,7 @@
 
 <footer>
   <p>本站为粉丝二创作品，仅供娱乐，不可用于商业用途。<br>
-  《咒术回战》© 芥见下下／集英社·MAPPA · 梗内容整理自 B站弹幕、贴吧、微博等社区</p>
+  《咒术回战》© 芥见下下／集英社·MAPPA · 梗内容整理自 B站弹幕、贴吧、微博等社区 · 梗库 v3（雨爱版零前摇已接入）</p>
 </footer>
 
 <script>
@@ -710,12 +710,10 @@ quizRender();
   });
   let rot=0, spinning=false;
   const cntKey="jjk_bento_count";
-  function updCnt(){ $("#wheelCount").textContent=`本转盘已累计送出 ${localStorage.getItem(cntKey)||0} 份便当`; }
-  updCnt();
 
-  /* 转到五条悟/两面宿傩 → 自动播放《雨爱》送行 */
+  /* 转到五条悟/两面宿傩 → 零前摇直插《雨爱》 */
   const RAIN_BV="BV1QC3G6DEKX", RAIN_TARGETS=["五条悟","两面宿傩"];
-  let rainFrame=null;
+  let rainFrame=null, missStreak=0;
   function loadRainlove(){
     if(rainFrame) rainFrame.remove();
     rainFrame=document.createElement("iframe");
@@ -729,14 +727,37 @@ quizRender();
   }
   $("#rainloveClose").addEventListener("click",stopRainlove);
 
+  /* 加权抽取：最强/最恶权重3，其余1（约1/3概率）；连续2次未出则第3次必出 */
+  function pickIndex(){
+    if(missStreak>=2){
+      const opts=WHEEL_CHARS.map((n,i)=>i).filter(i=>RAIN_TARGETS.includes(WHEEL_CHARS[i]));
+      return opts[Math.floor(Math.random()*opts.length)];
+    }
+    const weights=WHEEL_CHARS.map(n=>RAIN_TARGETS.includes(n)?3:1);
+    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
+    for(let i=0;i<weights.length;i++){ r-=weights[i]; if(r<0) return i; }
+    return weights.length-1;
+  }
+  function updCnt(){
+    $("#wheelCount").textContent=`本转盘已累计送出 ${localStorage.getItem(cntKey)||0} 份便当 · 保底进度：已连 ${missStreak} 次未出最强/最恶（第 3 次必出）`;
+  }
+  updCnt();
+
   $("#spinBtn").addEventListener("click",()=>{
     if(spinning) return; spinning=true;
     $("#bento").classList.remove("show");
     stopRainlove();
     $("#spinBtn").disabled=true;
-    const idx=Math.floor(Math.random()*WHEEL_CHARS.length);
+    const idx=pickIndex();
     const willRain=RAIN_TARGETS.includes(WHEEL_CHARS[idx]);
-    if(willRain) loadRainlove(); /* 在点击手势内创建iframe，确保带声自动播放 */
+    if(willRain){
+      missStreak=0;
+      loadRainlove();                 /* 在点击手势内创建，带声自动播放 */
+      $("#rainlove").classList.add("show"); /* 零前摇：立即显示，不等转盘 */
+    }else{
+      missStreak++;
+    }
+    updCnt();
     const target=idx*seg+seg/2;
     const cur=((rot%360)+360)%360;
     const delta=360*5+(((360-target)%360-cur+360)%360)+Math.random()*14-7;
@@ -746,9 +767,8 @@ quizRender();
       spinning=false; $("#spinBtn").disabled=false;
       const n=WHEEL_CHARS[idx];
       $("#bentoName").textContent=n+" 领便当";
-      $("#bentoMsg").textContent=willRain?"送行BGM已自动播放，走好。":BENTO_MSGS[Math.floor(Math.random()*BENTO_MSGS.length)];
+      $("#bentoMsg").textContent=willRain?"送行BGM已在转盘转动时同步开播，走好。":BENTO_MSGS[Math.floor(Math.random()*BENTO_MSGS.length)];
       $("#bento").classList.add("show");
-      if(willRain) $("#rainlove").classList.add("show");
       localStorage.setItem(cntKey,(+localStorage.getItem(cntKey)||0)+1);
       updCnt();
     },4150);
