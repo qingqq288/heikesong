@@ -268,6 +268,20 @@
   .bento .m{font-size:14px;color:var(--sub)}
   .wheel-count{color:var(--faint);font-size:12px}
 
+  /* ---------- rainlove autoplay ---------- */
+  .rainlove{
+    max-width:640px;width:100%;padding:16px 18px;border-radius:14px;display:none;
+    border:1px solid rgba(79,209,255,.45);
+    background:linear-gradient(180deg,rgba(79,209,255,.10),rgba(79,209,255,.02));
+    box-shadow:0 0 30px rgba(79,209,255,.15);
+  }
+  .rainlove.show{display:block;animation:fadein .4s ease}
+  .rain-head{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:10px}
+  .rain-head button{background:rgba(255,77,90,.15);border:1px solid rgba(255,77,90,.5);color:#ff8a94;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+  .rain-head button:hover{background:rgba(255,77,90,.3);color:#fff}
+  #rainloveFrame iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:10px;display:block;background:#000}
+  .rain-tip{font-size:12px;color:var(--faint);margin-top:8px}
+
   /* ---------- footer ---------- */
   footer{border-top:1px solid var(--line);padding:26px 0 34px;margin-top:20px}
   footer p{color:var(--faint);font-size:12px;text-align:center;line-height:2}
@@ -351,7 +365,7 @@
   <section id="view-wheel" class="view">
     <div class="sec-head" style="margin-top:0"><h2>死亡转盘</h2><span class="cnt">传说芥见下下用转盘决定谁领便当</span></div>
     <div class="wheel-wrap">
-      <p class="wheel-note">规则：转到谁，谁下一话领便当。flag 慎立，遗言趁早。本转盘与芥见下下本人无关（大概）。</p>
+      <p class="wheel-note">规则：转到谁，谁下一话领便当。转到<b style="color:var(--cyan)">五条悟</b>或<b style="color:var(--cyan)">两面宿傩</b>时，自动播放《雨爱》送行。flag 慎立，遗言趁早。</p>
       <div class="wheel-area">
         <div class="pointer"></div>
         <div id="wheel"></div>
@@ -364,6 +378,14 @@
         <div class="m" id="bentoMsg"></div>
       </div>
       <div class="wheel-count" id="wheelCount"></div>
+      <div class="rainlove" id="rainlove">
+        <div class="rain-head">
+          <span>♪ 新宿的雨，下起来了——《雨爱》已自动响起</span>
+          <button id="rainloveClose">停止播放 ×</button>
+        </div>
+        <div id="rainloveFrame"></div>
+        <p class="rain-tip">转盘把便当发给了最强/最恶，按惯例播放「雨爱版」送行。走好。</p>
+      </div>
     </div>
   </section>
 
@@ -386,7 +408,24 @@
         <p class="vid-note">视频版权归原作者「螺丝儿饿了」所有，本站仅作梗来源整理与引用。若加载失败请点击上方链接前往 B 站观看。</p>
       </div>
     </div>
-    <div class="sec-head"><h2>本期视频梗速览</h2><span class="cnt">整理自本期视频与评论区</span></div>
+    <div class="sec-head" style="margin-top:26px"><h2>催泪二创 · 雨爱版</h2><span class="cnt">死亡转盘专属 BGM</span></div>
+    <div class="vid-box">
+      <div class="vid-cover">
+        <img src="https://i0.hdslb.com/bfs/archive/8388b0448883d61afa38903bfc54afac905ccd93.jpg" referrerpolicy="no-referrer" alt="新宿决战雨爱版封面">
+        <div class="play">点右侧播放器观看</div>
+      </div>
+      <div class="vid-info">
+        <h3>「新宿决战」雨爱版</h3>
+        <p>五条悟 vs 宿傩的最终对决 ×《雨爱》。1394 万播放的催泪二创天花板。本站死亡转盘转到<b style="color:var(--cyan)">五条悟</b>或<b style="color:var(--cyan)">两面宿傩</b>领便当时，会自动播放这首送行曲。</p>
+        <div class="meta">
+          UP主：望穿秋水145 · 时长 01:50 · 播放 1394万 · 弹幕 8.3万<br>
+          视频地址：<a href="https://b23.tv/iUzx0Tv" target="_blank" rel="noopener" style="color:var(--cyan)">b23.tv/iUzx0Tv</a>
+        </div>
+        <iframe id="bplayer2" src="https://player.bilibili.com/player.html?bvid=BV1QC3G6DEKX&page=1&high_quality=1&danmaku=1&autoplay=0" scrolling="no" allowfullscreen></iframe>
+        <p class="vid-note">视频版权归原作者「望穿秋水145」所有，本站仅作梗来源整理与引用。若加载失败请点击上方链接前往 B 站观看。</p>
+      </div>
+    </div>
+    <div class="sec-head"><h2>本期视频梗速览</h2><span class="cnt">整理自站内收录名梗视频与评论区</span></div>
     <div id="videoGrid" class="grid"></div>
   </section>
 
@@ -481,7 +520,9 @@ const MEMES = [
   {name:"你觉得2024年最搞笑的漫画是哪一部",cat:"视频",arc:"全网通用",src:"B站名梗合集·高赞评论区",heat:90,quote:"嗯……咒术回战吧，不过这只是我个人的观点。",desc:"采访体万能模板。一本正经、层层递进、最后图穷匕见——用于一切“含蓄锐评”场合，视频评论区2409赞复刻现场。"},
   {name:"一刻都没有时间为其哀悼",cat:"视频",arc:"全网通用",src:"B站大型纪录片二创",heat:88,quote:"我第一时间赶到现场，不是哀悼，是先跳个舞。",desc:"“大型纪录片”体整活：五条悟下线后，全网没有一刻为他哀悼——都在赶制跳舞视频和二创。悼念与整活齐飞。"},
   {name:"五条悟驾驶员",cat:"视频",arc:"新宿决战篇",src:"B站名梗合集·高赞评论区",heat:86,quote:"把五条本人算上，最强的驾驶员也是乙骨。",desc:"乙骨借体五条之后，“驾驶五条悟”成了梗：讨论五条身体的最佳驾驶员是谁。评论区高赞结论：乙骨，遥遥领先。"},
-  {name:"现代最强vs史上最强",cat:"视频",arc:"全网通用",src:"B站名梗合集·人外魔境新宿决战篇",heat:84,quote:"现代最强，对上史上最强。",desc:"五条悟vs宿傩的官方对决框架，也是弹幕一切“强强对话”的通用标题：现代最强碰上史上最强，坐好扶稳。"}
+  {name:"现代最强vs史上最强",cat:"视频",arc:"全网通用",src:"B站名梗合集·人外魔境新宿决战篇",heat:84,quote:"现代最强，对上史上最强。",desc:"五条悟vs宿傩的官方对决框架，也是弹幕一切“强强对话”的通用标题：现代最强碰上史上最强，坐好扶稳。"},
+  {name:"雨爱版新宿决战",cat:"视频",arc:"全网通用",src:"B站二创·BV1QC3G6DEKX",heat:93,quote:"你听，新宿的雨下起来了。",desc:"五条悟vs宿傩最终对决 ×《雨爱》BGM，1394万播放的催泪二创天花板。本站死亡转盘转到五条悟/两面宿傩时，会自动播放这首送行曲。"},
+  {name:"我坐好了",cat:"视频",arc:"全网通用",src:"B站二创·置顶简介",heat:87,quote:"我坐好了。",desc:"新宿决战预告下的标准回复：我坐好了。搬好小板凳坐等最强对决，现泛用于一切大型名场面前排占座。"}
 ];
 
 const ARCS = [
@@ -671,10 +712,31 @@ quizRender();
   const cntKey="jjk_bento_count";
   function updCnt(){ $("#wheelCount").textContent=`本转盘已累计送出 ${localStorage.getItem(cntKey)||0} 份便当`; }
   updCnt();
+
+  /* 转到五条悟/两面宿傩 → 自动播放《雨爱》送行 */
+  const RAIN_BV="BV1QC3G6DEKX", RAIN_TARGETS=["五条悟","两面宿傩"];
+  let rainFrame=null;
+  function loadRainlove(){
+    if(rainFrame) rainFrame.remove();
+    rainFrame=document.createElement("iframe");
+    rainFrame.src=`https://player.bilibili.com/player.html?bvid=${RAIN_BV}&page=1&high_quality=1&danmaku=1&autoplay=1`;
+    rainFrame.allowFullscreen=true;
+    $("#rainloveFrame").appendChild(rainFrame);
+  }
+  function stopRainlove(){
+    $("#rainlove").classList.remove("show");
+    if(rainFrame){ rainFrame.remove(); rainFrame=null; }
+  }
+  $("#rainloveClose").addEventListener("click",stopRainlove);
+
   $("#spinBtn").addEventListener("click",()=>{
     if(spinning) return; spinning=true;
-    $("#bento").classList.remove("show"); $("#spinBtn").disabled=true;
+    $("#bento").classList.remove("show");
+    stopRainlove();
+    $("#spinBtn").disabled=true;
     const idx=Math.floor(Math.random()*WHEEL_CHARS.length);
+    const willRain=RAIN_TARGETS.includes(WHEEL_CHARS[idx]);
+    if(willRain) loadRainlove(); /* 在点击手势内创建iframe，确保带声自动播放 */
     const target=idx*seg+seg/2;
     const cur=((rot%360)+360)%360;
     const delta=360*5+(((360-target)%360-cur+360)%360)+Math.random()*14-7;
@@ -684,8 +746,9 @@ quizRender();
       spinning=false; $("#spinBtn").disabled=false;
       const n=WHEEL_CHARS[idx];
       $("#bentoName").textContent=n+" 领便当";
-      $("#bentoMsg").textContent=BENTO_MSGS[Math.floor(Math.random()*BENTO_MSGS.length)];
+      $("#bentoMsg").textContent=willRain?"送行BGM已自动播放，走好。":BENTO_MSGS[Math.floor(Math.random()*BENTO_MSGS.length)];
       $("#bento").classList.add("show");
+      if(willRain) $("#rainlove").classList.add("show");
       localStorage.setItem(cntKey,(+localStorage.getItem(cntKey)||0)+1);
       updCnt();
     },4150);
